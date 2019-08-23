@@ -82,7 +82,7 @@ func runREST(stop chan<- error) {
 	ctx := context.Background()
 	mux := runtime.NewServeMux()
 	opts := []grpc.DialOption{grpc.WithInsecure()}
-	if err = apis.RegisterGreeterHandlerFromEndpoint(ctx, mux, fmt.Sprintf("%v:%v", host, grpcPort), opts); err != nil {
+	if err = apis.RegisterGreeterHandlerFromEndpoint(ctx, mux, fmt.Sprintf("%v:%v", "127.0.0.1", grpcPort), opts); err != nil {
 		return
 	}
 	logrus.Infof("REST Server listening on %v:%v ", host, restPort)

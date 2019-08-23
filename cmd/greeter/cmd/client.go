@@ -26,6 +26,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var name string
+
 // clientCmd represents the client command
 var clientCmd = &cobra.Command{
 	Use:   "client",
@@ -42,7 +44,7 @@ var clientCmd = &cobra.Command{
 
 		gc := apis.NewGreeterClient(conn)
 		resp, err := gc.SayHello(context.Background(), &apis.HelloRequest{
-			Name: "Alice",
+			Name: name,
 		})
 		if err != nil {
 			logrus.Fatal(err)
@@ -54,4 +56,5 @@ var clientCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(clientCmd)
 	clientCmd.Flags().StringVar(&host, "host", "localhost", "Host to connect to")
+	clientCmd.Flags().StringVar(&name, "name", "Alice", "Host to connect to")
 }

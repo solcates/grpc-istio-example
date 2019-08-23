@@ -20,9 +20,7 @@ spec:
                     port:
                         number: {{ .Values.service.grpcPort }}
                     host:  {{ include "grpc-istio-example.fullname" . }}
-        - match:
-              - port: {{ .Values.istio.restPort }}
-          route:
+        - route:
               - destination:
                     port:
                         number: {{ .Values.service.restPort }}

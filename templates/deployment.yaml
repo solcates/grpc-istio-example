@@ -1,56 +1,55 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "grpc-istio-example.fullname" . }}
-  labels:
-    app.kubernetes.io/name: {{ include "grpc-istio-example.name" . }}
-    helm.sh/chart: {{ include "grpc-istio-example.chart" . }}
-    app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
-spec:
-  replicas: {{ .Values.replicaCount }}
-  selector:
-    matchLabels:
-      app.kubernetes.io/name: {{ include "grpc-istio-example.name" . }}
-      app.kubernetes.io/instance: {{ .Release.Name }}
-  template:
-    metadata:
-      labels:
+    name: {{ include "grpc-istio-example.fullname" . }}
+    labels:
         app.kubernetes.io/name: {{ include "grpc-istio-example.name" . }}
+        helm.sh/chart: {{ include "grpc-istio-example.chart" . }}
         app.kubernetes.io/instance: {{ .Release.Name }}
-    spec:
-      containers:
-        - name: {{ .Chart.Name }}
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
-          ports:
-            - name: http-greeter
-              containerPort: {{.Values.service.restPort}}
-              protocol: TCP
-            - name: grpc-greeter
-              containerPort: {{.Values.service.grpcPort}}
-              protocol: TCP
-          livenessProbe:
-            exec:
-              command:
-                - /greeter
-                - client
-          readinessProbe:
-            exec:
-              command:
-                - /greeter
-                - client
-          resources:
-            {{- toYaml .Values.resources | nindent 12 }}
-      {{- with .Values.nodeSelector }}
-      nodeSelector:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-    {{- with .Values.affinity }}
-      affinity:
-        {{- toYaml . | nindent 8 }}
-    {{- end }}
-    {{- with .Values.tolerations }}
-      tolerations:
-        {{- toYaml . | nindent 8 }}
-    {{- end }}
+        app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+    replicas: {{ .Values.replicaCount }}
+    selector:
+        matchLabels:
+            app.kubernetes.io/name: {{ include "grpc-istio-example.name" . }}
+            app.kubernetes.io/instance: {{ .Release.Name }}
+    strategy:
+        type: RollingUpdate
+        rollingUpdate:
+            maxUnavailable: 1
+            maxSurge: 1
+    template:
+        metadata:
+            labels:
+                app.kubernetes.io/name: {{ include "grpc-istio-example.name" . }}
+                app.kubernetes.io/instance: {{ .Release.Name }}
+        spec:
+
+            containers:
+                - name: {{ .Chart.Name }}
+                  image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+                  imagePullPolicy: {{ .Values.image.pullPolicy }}
+                  ports:
+                      - name: http-greeter
+                        containerPort: {{.Values.service.restPort}}
+                        protocol: TCP
+                      - name: grpc-greeter
+                        containerPort: {{.Values.service.grpcPort}}
+                        protocol: TCP
+                  livenessProbe:
+                      exec:
+                          command:
+                              - /greeter
+                              - client
+                  readinessProbe:
+                      exec:
+                          command:
+                              - /greeter
+                              - client
+                  resources:
+                      limits:
+                          cpu: 100m
+                          memory: 128Mi
+                      requests:
+                          cpu: 100m
+                          memory: 128Mi

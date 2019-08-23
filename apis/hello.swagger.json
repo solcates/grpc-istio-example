@@ -16,7 +16,7 @@
   ],
   "paths": {
     "/v1/hello": {
-      "post": {
+      "get": {
         "summary": "Sends a greeting",
         "operationId": "SayHello",
         "responses": {
@@ -29,12 +29,10 @@
         },
         "parameters": [
           {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/apisHelloRequest"
-            }
+            "name": "name",
+            "in": "query",
+            "required": false,
+            "type": "string"
           }
         ],
         "tags": [
@@ -43,7 +41,7 @@
       }
     },
     "/v1/helloagain": {
-      "post": {
+      "get": {
         "summary": "Sends another greeting",
         "operationId": "SayHelloAgain",
         "responses": {
@@ -56,12 +54,10 @@
         },
         "parameters": [
           {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/apisHelloRequest"
-            }
+            "name": "name",
+            "in": "query",
+            "required": false,
+            "type": "string"
           }
         ],
         "tags": [
@@ -79,15 +75,6 @@
         }
       },
       "title": "The response message containing the greetings"
-    },
-    "apisHelloRequest": {
-      "type": "object",
-      "properties": {
-        "name": {
-          "type": "string"
-        }
-      },
-      "description": "The request message containing the user's name."
     }
   }
 }

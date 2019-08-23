@@ -17,7 +17,7 @@ vendor:
 		@go mod vendor
 
 ## Docker
-docker-build: vendor
+docker-build: gen vendor
 		@docker build -t solcates/grpc-istio-example .
 
 docker-push:
@@ -30,18 +30,20 @@ build:
 		@go build --mod=vendor ./cmd/greeter
 
 
-## Running
-run-client-remote:
-		@go run ./cmd/greeter client --host $(HOST).$(DOMAIN)
+## Running local
 
 run-server:
 		@go run ./cmd/greeter server
-## Deployments
+run-client:
+		go run ./cmd/greeter client --name LocalAlice
 
-
+## Running Kubernetes
 ARGS=   --set domain=$(DOMAIN) \
 		--set host=$(HOST)
-deploy:
+deploy: docker
 		@helm upgrade --install --namespace $(HOST) $(HOST) . \
 		$(ARGS) \
 		--recreate-pods
+run-client-remote:
+		go run ./cmd/greeter client --host $(HOST).$(DOMAIN) --name K8SAlice
+
