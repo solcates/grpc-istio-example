@@ -13,7 +13,7 @@ spec:
     servers:
         - port:
               number: {{ .Values.istio.grpcPort }}
-              name: http-grpc
+              name: https-grpc
               protocol: HTTPS
           tls:
               mode: SIMPLE
@@ -24,7 +24,7 @@ spec:
               - "{{ .Values.host }}.{{ .Values.domain }}"
         - port:
               number: {{ .Values.istio.restPort }}
-              name: http-rest
+              name: https-rest
               protocol: HTTPS
           tls:
               mode: SIMPLE

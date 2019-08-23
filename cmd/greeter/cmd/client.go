@@ -18,15 +18,18 @@ package cmd
 import (
 	"context"
 	"fmt"
+	httptransport "github.com/go-openapi/runtime/client"
+	"github.com/go-openapi/strfmt"
 	"github.com/sirupsen/logrus"
 	"github.com/solcates/grpc-istio-example/apis"
-	"google.golang.org/grpc"
-	"log"
-
+	restclient "github.com/solcates/grpc-istio-example/apis/rest/client"
+	"github.com/solcates/grpc-istio-example/apis/rest/client/greeter"
 	"github.com/spf13/cobra"
+	"google.golang.org/grpc"
 )
 
 var name string
+var rest bool
 
 // clientCmd represents the client command
 var clientCmd = &cobra.Command{
@@ -34,22 +37,12 @@ var clientCmd = &cobra.Command{
 	Short: "Run Echo Client",
 
 	Run: func(cmd *cobra.Command, args []string) {
-
-		var conn *grpc.ClientConn
-		conn, err := grpc.Dial(fmt.Sprintf("%s:%d", host, grpcPort), grpc.WithInsecure())
-		if err != nil {
-			log.Fatalf("did not connect: %s", err)
+		if rest {
+			runRESTClient()
+		} else {
+			runClient()
 		}
-		defer conn.Close()
 
-		gc := apis.NewGreeterClient(conn)
-		resp, err := gc.SayHello(context.Background(), &apis.HelloRequest{
-			Name: name,
-		})
-		if err != nil {
-			logrus.Fatal(err)
-		}
-		logrus.Info(resp)
 	},
 }
 
@@ -57,4 +50,39 @@ func init() {
 	rootCmd.AddCommand(clientCmd)
 	clientCmd.Flags().StringVar(&host, "host", "localhost", "Host to connect to")
 	clientCmd.Flags().StringVar(&name, "name", "Alice", "Host to connect to")
+	clientCmd.Flags().BoolVar(&rest, "rest", false, "Use REST client instead of gRPC client")
+}
+
+func runClient() {
+	var conn *grpc.ClientConn
+	conn, err := grpc.Dial(fmt.Sprintf("%s:%d", host, grpcPort), grpc.WithInsecure())
+	if err != nil {
+		logrus.Fatalf("did not connect: %s", err)
+	}
+	defer conn.Close()
+
+	gc := apis.NewGreeterClient(conn)
+	resp, err := gc.SayHello(context.Background(), &apis.HelloRequest{
+		Name: name,
+	})
+	if err != nil {
+		logrus.Fatal(err)
+	}
+	logrus.Info(resp)
+}
+
+func runRESTClient() {
+
+	// create the transport
+	transport := httptransport.New(fmt.Sprintf("%s:%d", host, restPort), "", []string{"http"})
+
+	// create the API client, with the transport
+	client := restclient.New(transport, strfmt.Default)
+	params := greeter.NewSayHelloParams()
+	params.Name = &name
+	resp, err := client.Greeter.SayHello(params)
+	if err != nil {
+		logrus.Fatal(err)
+	}
+	logrus.Info(resp.Payload)
 }
