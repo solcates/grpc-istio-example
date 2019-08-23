@@ -34,7 +34,7 @@ var serverCmd = &cobra.Command{
 
 		s := greeter.NewHelloServer()
 
-		lis, err := net.Listen("tcp", fmt.Sprintf(":%d", 31400))
+		lis, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
 		if err != nil {
 			logrus.Fatalf("failed to listen: %v", err)
 		}
@@ -44,7 +44,7 @@ var serverCmd = &cobra.Command{
 		// attach the Ping service to the server
 		apis.RegisterGreeterServer(grpcServer, s)
 		logrus.Info("Starting Greeter Server")
-		logrus.Infof("Listening on 0.0.0.0:%d ", 31400)
+		logrus.Infof("Listening on 0.0.0.0:%d ", port)
 		if err := grpcServer.Serve(lis); err != nil {
 			logrus.Fatalf("failed to serve: %s", err)
 		}

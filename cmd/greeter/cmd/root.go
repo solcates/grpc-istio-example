@@ -17,6 +17,7 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"os"
 
@@ -25,6 +26,9 @@ import (
 )
 
 var cfgFile string
+var port int
+var host string
+var debug bool
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -57,8 +61,8 @@ func init() {
 	// when this action is called directly.
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 
-	// host
-
+	rootCmd.PersistentFlags().IntVar(&port, "port", 31400, "Port that server runs on")
+	rootCmd.PersistentFlags().BoolVar(&debug,"debug",false,"enabled debug logging")
 }
 
 // initConfig reads in config file and ENV variables if set.
@@ -84,5 +88,9 @@ func initConfig() {
 	// If a config file is found, read it in.
 	if err := viper.ReadInConfig(); err == nil {
 		fmt.Println("Using config file:", viper.ConfigFileUsed())
+	}
+
+	if debug {
+		logrus.SetLevel(logrus.DebugLevel)
 	}
 }

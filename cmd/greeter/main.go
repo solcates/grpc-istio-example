@@ -15,8 +15,10 @@ limitations under the License.
 */
 package main
 
-import "github.com/solcates/grpc-istio-example/greeter/cmd"
+import (
+  cmd2 "github.com/solcates/grpc-istio-example/cmd/greeter/cmd"
+)
 
 func main() {
-  cmd.Execute()
+  cmd2.Execute()
 }

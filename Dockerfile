@@ -3,12 +3,13 @@ ENV GOOS=linux
 ENV GOARC=amd64
 ENV CGO_ENABLED=0
 ADD vendor /app/vendor
+ADD Makefile /app/Makefile
 ADD apis /app/apis
 ADD pkg /app/pkg
-ADD greeter /app/greeter
+ADD cmd/greeter /app/cmd/greeter
 ADD go.* /app/
 WORKDIR /app
-RUN go build -mod=vendor greeter
+RUN make build
 
 FROM scratch
 COPY --from=builder /app/greeter /greeter

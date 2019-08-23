@@ -1,0 +1,10 @@
+# Created by .ignore support plugin (hsz.mobi)
+.git
+pkg
+mocks
+vendor
+greeter
+*.tgz
+Makefile
+go.mod
+go.sum

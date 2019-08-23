@@ -1,0 +1,35 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+    name: {{ include "grpc-istio-example.fullname" . }}
+    labels:
+        app.kubernetes.io/name: {{ include "grpc-istio-example.name" . }}
+        helm.sh/chart: {{ include "grpc-istio-example.chart" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+    selector:
+        istio: ingressgateway # use istio default ingress gateway
+    servers:
+        - port:
+              number: {{ .Values.istio.grpcPort }}
+              name: grpc-prt
+              protocol: HTTPS
+          tls:
+              mode: SIMPLE
+              serverCertificate: sds
+              credentialName: ingress-cert
+              privateKey: sds
+          hosts:
+              - "{{ .Values.host }}.{{ .Values.domain }}"
+        - port:
+              number: {{ .Values.istio.restPort }}
+              name: http-prt
+              protocol: HTTPS
+          tls:
+              mode: SIMPLE
+              serverCertificate: sds
+              credentialName: ingress-cert
+              privateKey: sds
+          hosts:
+              - "{{ .Values.host }}.{{ .Values.domain }}"

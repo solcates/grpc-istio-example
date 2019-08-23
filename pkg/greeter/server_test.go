@@ -19,16 +19,15 @@ func TestHelloServer_SayHello(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name:    "OK",
-			args:    args{
+			name: "OK",
+			args: args{
 				ctx: context.Background(),
 				req: &apis.HelloRequest{
-					Name:                 "Alice",
+					Name: "Alice",
 				},
 			},
 			wantRes: &apis.HelloReply{
-				Message:              "Hello, Alice",
-
+				Message: "Hello, Alice",
 			},
 			wantErr: false,
 		},
@@ -60,16 +59,15 @@ func TestHelloServer_SayHelloAgain(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name:    "OK",
-			args:    args{
+			name: "OK",
+			args: args{
 				ctx: context.Background(),
 				req: &apis.HelloRequest{
-					Name:                 "Alice",
+					Name: "Alice",
 				},
 			},
 			wantRes: &apis.HelloReply{
-				Message:              "Hello Again, Alice",
-
+				Message: "Hello Again, Alice",
 			},
 			wantErr: false,
 		},
