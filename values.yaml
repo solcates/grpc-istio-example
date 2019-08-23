@@ -7,6 +7,7 @@ replicaCount: 2
 image:
   repository: solcates/grpc-istio-example
   tag: latest
+#  hash:
   pullPolicy: Always
 
 nameOverride: ""

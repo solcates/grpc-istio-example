@@ -74,7 +74,14 @@ func runClient() {
 func runRESTClient() {
 
 	// create the transport
-	transport := httptransport.New(fmt.Sprintf("%s:%d", host, restPort), "", []string{"http"})
+	schemes := []string{}
+	if restPort == 443 {
+		schemes = append(schemes, "https")
+	} else{
+		schemes = append(schemes, "http")
+	}
+
+	transport := httptransport.New(fmt.Sprintf("%s:%d", host, restPort), "",schemes)
 
 	// create the API client, with the transport
 	client := restclient.New(transport, strfmt.Default)

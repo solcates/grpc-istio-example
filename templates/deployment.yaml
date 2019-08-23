@@ -27,11 +27,15 @@ spec:
 
             containers:
                 - name: {{ .Chart.Name }}
+                        {{ if .Values.image.hash }}
                   image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+                        {{ else }}
+                  image: "{{ .Values.image.repository }}@{{ .Values.image.hash }}"
+                        {{end }}
                   imagePullPolicy: {{ .Values.image.pullPolicy }}
                   env:
-                    - name: foo
-                      value: bar
+                      - name: foo
+                        value: bar
                   ports:
                       - name: http-rest
                         containerPort: {{.Values.service.restPort}}

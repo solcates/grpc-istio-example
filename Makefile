@@ -1,4 +1,4 @@
-.PHONY: all gen vendor
+.PHONY: all gen vendor e2e
 
 CI_COMMIT_REF_SLUG ?= dev
 BASE_NAME ?= example
@@ -8,7 +8,7 @@ RELEASE_NAME ?= $(BASE_NAME)-$(CI_COMMIT_REF_SLUG)
 GIT_COMMIT ?= $(shell git rev-list -1 HEAD)
 TAGS ?= -ldflags "-X github.com/solcates/grpc-istio-example/pkg/greeter.Version=$(GIT_COMMIT)"
 DEVTAG ?= latest
-
+hash = $(or $(word 2,$(subst :, ,$1)),$(value 2))
 
 gen-grpc:
 		@protoc \
@@ -20,6 +20,9 @@ gen-grpc:
 		--go_out=plugins=grpc:apis/. hello.proto
 gen-rest:
 		@swagger generate client -f apis/hello.swagger.json -c apis/rest/client -m apis/rest/models -q
+gen-echo:
+		@echo Generating
+
 gen: gen-grpc gen-rest
 
 vendor:
@@ -29,7 +32,7 @@ vendor:
 ## Docker
 docker-build: gen vendor
 		@echo Building Docker Image
-		$(eval DEVTAG := $(shell docker build --build-arg GIT_COMMIT=$(GIT_COMMIT) --quiet -t solcates/grpc-istio-example .))
+		$(eval DEVTAG := $(shell docker build --build-arg GIT_COMMIT=$(GIT_COMMIT) --quiet -t solcates/grpc-istio-example . ))
 
 docker-push:
 		@echo Pushing Docker Image to Registry
@@ -53,7 +56,7 @@ run-client-rest:
 ## Running on Kubernetes
 ARGS=   --set domain=$(DOMAIN) \
 		--set host=$(HOST) \
-		--set image.tag=$(DEVTAG)
+		--set image.hash=$(DEVTAG)
 
 deploy: docker deploy-only
 deploy-only:
@@ -65,6 +68,15 @@ deploy-only:
 		--recreate-pods
 
 run-client-remote:
-		@echo Connecting to Remote Client : $(HOST).$(DOMAIN)
-		go run $(TAGS) ./cmd/greeter client --host $(HOST).$(DOMAIN) --name K8SAlice
+		@echo Connecting to Remote Client via gRPC: $(HOST).$(DOMAIN)
+		@go run $(TAGS) ./cmd/greeter client --host $(HOST).$(DOMAIN) --name K8SAlice
 
+run-client-remote-rest:
+		@echo Connecting to Remote Client via REST: $(HOST).$(DOMAIN)
+		@go run $(TAGS) ./cmd/greeter client --host $(HOST).$(DOMAIN) --rest_port 443 --name K8SAlice --rest
+
+## Testing
+
+
+## e2e
+e2e: run-client-remote-rest run-client-remote
