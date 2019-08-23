@@ -30,10 +30,10 @@ spec:
                   image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
                   imagePullPolicy: {{ .Values.image.pullPolicy }}
                   ports:
-                      - name: http-greeter
+                      - name: http-rest
                         containerPort: {{.Values.service.restPort}}
                         protocol: TCP
-                      - name: grpc-greeter
+                      - name: http-grpc
                         containerPort: {{.Values.service.grpcPort}}
                         protocol: TCP
                   livenessProbe:

@@ -11,13 +11,13 @@ spec:
   type: {{ .Values.service.type }}
   ports:
     - port: {{ .Values.service.grpcPort }}
-      targetPort: grpc-greeter
+      targetPort: http-grpc
       protocol: TCP
-      name: grpc-greeter
+      name: http-grpc
     - port: {{ .Values.service.restPort }}
-      targetPort: http-greeter
+      targetPort: http-rest
       protocol: TCP
-      name: http-greeter
+      name: http-rest
   selector:
     app.kubernetes.io/name: {{ include "grpc-istio-example.name" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}

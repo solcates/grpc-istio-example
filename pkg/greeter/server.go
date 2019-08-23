@@ -17,7 +17,7 @@ func NewHelloServer() *HelloServer {
 func (h HelloServer) SayHello(ctx context.Context, req *apis.HelloRequest) (res *apis.HelloReply, err error) {
 	logrus.Debugf("request: %v", req)
 	res = &apis.HelloReply{
-		Message: fmt.Sprintf("Hello, %v", req.Name),
+		Message: fmt.Sprintf("Hello, %v.  Love, Greeter@%v", req.Name, Version),
 	}
 	logrus.Debugf("response: %v", res)
 	return

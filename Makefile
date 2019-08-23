@@ -3,6 +3,9 @@
 CI_COMMIT_REF_SLUG ?= dev
 DOMAIN ?= example.com
 HOST ?= example-$(CI_COMMIT_REF_SLUG)
+GIT_COMMIT ?= $(shell git rev-list -1 HEAD)
+TAGS ?= -ldflags "-X github.com/solcates/grpc-istio-example/pkg/greeter.Version=$(GIT_COMMIT)"
+
 
 gen:
 		@protoc \
@@ -18,7 +21,7 @@ vendor:
 
 ## Docker
 docker-build: gen vendor
-		@docker build -t solcates/grpc-istio-example .
+		@docker build --build-arg GIT_COMMIT=$(GIT_COMMIT) -t solcates/grpc-istio-example .
 
 docker-push:
 		@docker push solcates/grpc-istio-example
@@ -27,23 +30,22 @@ docker: docker-build docker-push
 
 ## Building
 build:
-		@go build --mod=vendor ./cmd/greeter
-
+		@go build $(TAGS) --mod=vendor ./cmd/greeter
 
 ## Running local
 
 run-server:
-		@go run ./cmd/greeter server
+		go run $(TAGS) ./cmd/greeter server --debug
 run-client:
-		go run ./cmd/greeter client --name LocalAlice
+		go run $(TAGS) ./cmd/greeter client --name LocalAlice --debug
 
 ## Running Kubernetes
 ARGS=   --set domain=$(DOMAIN) \
 		--set host=$(HOST)
 deploy: docker
 		@helm upgrade --install --namespace $(HOST) $(HOST) . \
-		$(ARGS) \
-		--recreate-pods
+		$(ARGS) 
+#		--recreate-pods
 run-client-remote:
-		go run ./cmd/greeter client --host $(HOST).$(DOMAIN) --name K8SAlice
+		go run $(TAGS) ./cmd/greeter client --host $(HOST).$(DOMAIN) --name K8SAlice
 
