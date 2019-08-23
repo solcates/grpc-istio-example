@@ -34,7 +34,7 @@ var clientCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 
 		var conn *grpc.ClientConn
-		conn, err := grpc.Dial(fmt.Sprintf("%s:%d", host, port), grpc.WithInsecure())
+		conn, err := grpc.Dial(fmt.Sprintf("%s:%d", host, grpcPort), grpc.WithInsecure())
 		if err != nil {
 			log.Fatalf("did not connect: %s", err)
 		}

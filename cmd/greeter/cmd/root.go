@@ -26,7 +26,7 @@ import (
 )
 
 var cfgFile string
-var port int
+var grpcPort, restPort int
 var host string
 var debug bool
 
@@ -61,8 +61,9 @@ func init() {
 	// when this action is called directly.
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 
-	rootCmd.PersistentFlags().IntVar(&port, "port", 31400, "Port that server runs on")
-	rootCmd.PersistentFlags().BoolVar(&debug,"debug",false,"enabled debug logging")
+	rootCmd.PersistentFlags().IntVar(&grpcPort, "grpc_port", 31400, "Port that server handles gRPC on")
+	rootCmd.PersistentFlags().IntVar(&restPort, "rest_port", 8080, "Port that server handles REST on")
+	rootCmd.PersistentFlags().BoolVar(&debug, "debug", false, "enabled debug logging")
 }
 
 // initConfig reads in config file and ENV variables if set.

@@ -16,13 +16,16 @@ limitations under the License.
 package cmd
 
 import (
+	"context"
 	"fmt"
+	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/sirupsen/logrus"
 	"github.com/solcates/grpc-istio-example/apis"
 	"github.com/solcates/grpc-istio-example/pkg/greeter"
 	"github.com/spf13/cobra"
 	"google.golang.org/grpc"
 	"net"
+	"net/http"
 )
 
 // serverCmd represents the server command
@@ -31,27 +34,66 @@ var serverCmd = &cobra.Command{
 	Short: "Run Echo Server",
 
 	Run: func(cmd *cobra.Command, args []string) {
+		stop := make(chan error)
+		// Start the GRPC Server
+		go runGRPC(stop)
 
-		s := greeter.NewHelloServer()
+		// Start the REST Server
+		go runREST(stop)
 
-		lis, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
-		if err != nil {
-			logrus.Fatalf("failed to listen: %v", err)
+		// Wait till someone says to stop...
+		select {
+		case err := <-stop:
+			if err != nil {
+				logrus.Fatal(err)
+			}
 		}
-
-		// create a gRPC server object
-		grpcServer := grpc.NewServer()
-		// attach the Ping service to the server
-		apis.RegisterGreeterServer(grpcServer, s)
-		logrus.Info("Starting Greeter Server")
-		logrus.Infof("Listening on 0.0.0.0:%d ", port)
-		if err := grpcServer.Serve(lis); err != nil {
-			logrus.Fatalf("failed to serve: %s", err)
-		}
-
 	},
+}
+
+func runGRPC(stop chan<- error) {
+	var err error
+	defer func() {
+		stop <- err
+	}()
+	s := greeter.NewHelloServer()
+
+	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", grpcPort))
+	if err != nil {
+		logrus.Fatalf("failed to listen: %v", err)
+	}
+	// create a gRPC server object
+	grpcServer := grpc.NewServer()
+	// attach the Ping service to the server
+	apis.RegisterGreeterServer(grpcServer, s)
+	logrus.Infof("gRPC Server Listening on 0.0.0.0:%d ", grpcPort)
+	if err = grpcServer.Serve(lis); err != nil {
+		logrus.Fatalf("failed to serve: %s", err)
+	}
+	return
+}
+
+func runREST(stop chan<- error) {
+	var err error
+	defer func() {
+		stop <- err
+	}()
+
+	ctx := context.Background()
+	mux := runtime.NewServeMux()
+	opts := []grpc.DialOption{grpc.WithInsecure()}
+	if err = apis.RegisterGreeterHandlerFromEndpoint(ctx, mux, fmt.Sprintf("%v:%v", host, grpcPort), opts); err != nil {
+		return
+	}
+	logrus.Infof("REST Server listening on %v:%v ", host, restPort)
+
+	if err = http.ListenAndServe(fmt.Sprintf("%v:%v", host, restPort), mux); err != nil {
+		return
+	}
 }
 
 func init() {
 	rootCmd.AddCommand(serverCmd)
+	serverCmd.Flags().StringVar(&host, "host", "0.0.0.0", "Host to listen on")
+
 }
