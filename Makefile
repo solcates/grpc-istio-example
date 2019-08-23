@@ -19,7 +19,7 @@ gen-grpc:
 		--swagger_out=logtostderr=true:apis \
 		--go_out=plugins=grpc:apis/. hello.proto
 gen-rest:
-		@swagger generate client -f apis/hello.swagger.json -c apis/rest/client -m apis/rest/models
+		@swagger generate client -f apis/hello.swagger.json -c apis/rest/client -m apis/rest/models -q
 gen: gen-grpc gen-rest
 
 vendor:
