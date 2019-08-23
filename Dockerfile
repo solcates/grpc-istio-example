@@ -1,0 +1,16 @@
+FROM golang:1.12 as builder
+ENV GOOS=linux
+ENV GOARC=amd64
+ENV CGO_ENABLED=0
+ADD vendor /app/vendor
+ADD apis /app/apis
+ADD pkg /app/pkg
+ADD greeter /app/greeter
+ADD go.* /app/
+WORKDIR /app
+RUN go build -mod=vendor greeter
+
+FROM scratch
+COPY --from=builder /app/greeter /greeter
+ENTRYPOINT ["/greeter"]
+CMD ["server"]
