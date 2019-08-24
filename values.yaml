@@ -4,11 +4,20 @@
 
 replicaCount: 2
 
+
+
 image:
   repository: solcates/grpc-istio-example
   tag: latest
 #  hash:
   pullPolicy: Always
+
+issuer:
+  name: letsencrypt-staging
+  kind: ClusterIssuer
+cert:
+  enabled: true
+
 
 nameOverride: ""
 fullnameOverride: ""
@@ -16,6 +25,11 @@ fullnameOverride: ""
 host: localhost
 
 domain: example.com
+
+pod:
+  grpcPort: 31400
+  restPort: 8080
+
 service:
   type: ClusterIP
   grpcPort: 31400

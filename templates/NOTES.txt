@@ -1,4 +1,4 @@
 
 gRPC Server running at grpc://{{.Values.host}}.{{.Values.domain}}:{{.Values.istio.grpcPort}}
-REST Server running at https://{{.Values.host}}.{{.Values.domain}}:{{.Values.istio.restPort}}
+REST Server running at https://{{.Values.host}}.{{.Values.domain}}:{{.Values.istio.restPort}}/v1/hello?name=test
 

@@ -1,6 +1,6 @@
 .PHONY: all gen vendor e2e
 
-CI_COMMIT_REF_SLUG ?= dev
+CI_COMMIT_REF_SLUG ?= test1
 BASE_NAME ?= example
 DOMAIN ?= example.com
 HOST ?= $(BASE_NAME)-$(CI_COMMIT_REF_SLUG)
@@ -49,34 +49,45 @@ build:
 run-server:
 		go run $(TAGS) ./cmd/greeter server --debug
 run-client:
-		go run $(TAGS) ./cmd/greeter client --name LocalAlice --debug
+		go run $(TAGS) ./cmd/greeter client --name LocalGRPC --debug
 run-client-rest:
-		go run $(TAGS) ./cmd/greeter client --name LocalAlice --debug --rest --host 127.0.0.1
+		go run $(TAGS) ./cmd/greeter client --name LocalREST --debug --rest --host 127.0.0.1
 
 ## Running on Kubernetes
 ARGS=   --set domain=$(DOMAIN) \
 		--set host=$(HOST) \
 		--set image.hash=$(DEVTAG)
 
-deploy: docker deploy-only
+deploy:  deploy-only
 deploy-only:
 		@echo Deploying Chart
 		@kubectl create namespace $(RELEASE_NAME) || true
 		@kubectl label namespace $(RELEASE_NAME) istio-injection=enabled --overwrite || true
 		@helm upgrade --install --namespace $(RELEASE_NAME) $(RELEASE_NAME) . \
-		$(ARGS) \
-		--recreate-pods
+		$(ARGS)
+#		--recreate-pods
 
 run-client-remote:
-		@echo Connecting to Remote Client via gRPC: $(HOST).$(DOMAIN)
-		@go run $(TAGS) ./cmd/greeter client --host $(HOST).$(DOMAIN) --name K8SAlice
+		@echo Connecting to Remote Client via gRPC: grpc://$(HOST).$(DOMAIN):443
+		@go run $(TAGS) ./cmd/greeter client --host $(HOST).$(DOMAIN) --grpc_port 443 --name K8SAlice
 
 run-client-remote-rest:
-		@echo Connecting to Remote Client via REST: $(HOST).$(DOMAIN)
+		@echo Connecting to Remote Client via REST: https://$(HOST).$(DOMAIN)
 		@go run $(TAGS) ./cmd/greeter client --host $(HOST).$(DOMAIN) --rest_port 443 --name K8SAlice --rest
+
+teardown:
+		@helm delete --purge $(RELEASE_NAME)
 
 ## Testing
 
 
 ## e2e
-e2e: run-client-remote-rest run-client-remote
+e2e:
+		@$(MAKE) run-client-remote-rest
+		sleep 1
+		@$(MAKE) run-client-remote
+
+
+full-run: deploy
+		@echo Wait a bit till the deployment has refreshed the pods...
+		$(MAKE) e2e

@@ -13,8 +13,8 @@ spec:
     servers:
         - port:
               number: {{ .Values.istio.grpcPort }}
-              name: https-grpc
-              protocol: HTTPS
+              name: plain-grpc
+              protocol: TLS
           tls:
               mode: SIMPLE
               serverCertificate: sds

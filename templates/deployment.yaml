@@ -20,11 +20,12 @@ spec:
             maxSurge: 1
     template:
         metadata:
+            annotations:
+                readiness.status.sidecar.istio.io/applicationPorts: ""
             labels:
                 app.kubernetes.io/name: {{ include "grpc-istio-example.name" . }}
                 app.kubernetes.io/instance: {{ .Release.Name }}
         spec:
-
             containers:
                 - name: {{ .Chart.Name }}
                         {{ if .Values.image.hash }}
@@ -33,15 +34,19 @@ spec:
                   image: "{{ .Values.image.repository }}@{{ .Values.image.hash }}"
                         {{end }}
                   imagePullPolicy: {{ .Values.image.pullPolicy }}
+
+                  args:
+                      - server
+                      - --debug
                   env:
                       - name: foo
                         value: bar
                   ports:
                       - name: http-rest
-                        containerPort: {{.Values.service.restPort}}
+                        containerPort: {{.Values.pod.restPort}}
                         protocol: TCP
-                      - name: http-grpc
-                        containerPort: {{.Values.service.grpcPort}}
+                      - name: grpc-grpc
+                        containerPort: {{.Values.pod.grpcPort}}
                         protocol: TCP
                   livenessProbe:
                       exec:

@@ -12,7 +12,7 @@ ADD go.* /app/
 WORKDIR /app
 RUN make build
 
-FROM scratch
+FROM alpine
 COPY --from=builder /app/greeter /greeter
 ENTRYPOINT ["/greeter"]
 CMD ["server"]

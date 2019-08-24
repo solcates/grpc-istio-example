@@ -1,23 +1,23 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "grpc-istio-example.fullname" . }}
-  labels:
-    app.kubernetes.io/name: {{ include "grpc-istio-example.name" . }}
-    helm.sh/chart: {{ include "grpc-istio-example.chart" . }}
-    app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    name: {{ include "grpc-istio-example.fullname" . }}
+    labels:
+        app.kubernetes.io/name: {{ include "grpc-istio-example.name" . }}
+        helm.sh/chart: {{ include "grpc-istio-example.chart" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/managed-by: {{ .Release.Service }}
 spec:
-  type: {{ .Values.service.type }}
-  ports:
-    - port: {{ .Values.service.grpcPort }}
-      targetPort: http-grpc
-      protocol: TCP
-      name: http-grpc
-    - port: {{ .Values.service.restPort }}
-      targetPort: http-rest
-      protocol: TCP
-      name: http-rest
-  selector:
-    app.kubernetes.io/name: {{ include "grpc-istio-example.name" . }}
-    app.kubernetes.io/instance: {{ .Release.Name }}
+    type: {{ .Values.service.type }}
+    ports:
+        - port: {{ .Values.service.grpcPort }}
+          targetPort: {{ .Values.pod.grpcPort }}
+          protocol: TCP
+          name: grpc-grpc
+        - port: {{ .Values.service.restPort }}
+          targetPort: {{ .Values.pod.restPort }}
+          protocol: TCP
+          name: http-rest
+    selector:
+        app.kubernetes.io/name: {{ include "grpc-istio-example.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}

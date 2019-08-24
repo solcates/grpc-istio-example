@@ -14,7 +14,9 @@ spec:
         - {{ include "grpc-istio-example.fullname" . }}
     http:
         - match:
-              - port: {{ .Values.istio.grpcPort }}
+              - headers:
+                    content-type:
+                        exact: application/grpc
           route:
               - destination:
                     port:

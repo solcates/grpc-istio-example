@@ -17,6 +17,7 @@ package cmd
 
 import (
 	"context"
+	"crypto/tls"
 	"fmt"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/sirupsen/logrus"
@@ -24,9 +25,12 @@ import (
 	"github.com/solcates/grpc-istio-example/pkg/greeter"
 	"github.com/spf13/cobra"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 	"net"
 	"net/http"
 )
+
+var tlsCert, tlsKey string
 
 // serverCmd represents the server command
 var serverCmd = &cobra.Command{
@@ -58,12 +62,21 @@ func runGRPC(stop chan<- error) {
 	}()
 	s := greeter.NewHelloServer()
 
-	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", grpcPort))
+	lis, err := net.Listen("tcp", fmt.Sprintf("0.0.0:%d", grpcPort))
 	if err != nil {
 		logrus.Fatalf("failed to listen: %v", err)
 	}
 	// create a gRPC server object
-	grpcServer := grpc.NewServer()
+	opts := []grpc.ServerOption{}
+	if tlsCert != "" && tlsKey != "" {
+		var creds credentials.TransportCredentials
+		creds, err = credentials.NewServerTLSFromFile(tlsCert, tlsKey)
+		if err != nil {
+			return
+		}
+		opts = append(opts, grpc.Creds(creds))
+	}
+	grpcServer := grpc.NewServer(opts...)
 	// attach the Ping service to the server
 	apis.RegisterGreeterServer(grpcServer, s)
 	logrus.Infof("gRPC Server Listening on 0.0.0.0:%d ", grpcPort)
@@ -81,7 +94,20 @@ func runREST(stop chan<- error) {
 
 	ctx := context.Background()
 	mux := runtime.NewServeMux()
-	opts := []grpc.DialOption{grpc.WithInsecure()}
+	opts := []grpc.DialOption{}
+	if tlsCert != "" && tlsKey != "" {
+		var creds credentials.TransportCredentials
+		//creds, err = credentials.NewClientTLSFromFile(tlsCert, "127.0.0.1")
+		//if err != nil {
+		//	return
+		//}
+		creds = credentials.NewTLS(&tls.Config{
+			InsecureSkipVerify: true,
+		})
+		opts = append(opts, grpc.WithTransportCredentials(creds))
+	} else {
+		opts = append(opts, grpc.WithInsecure())
+	}
 	if err = apis.RegisterGreeterHandlerFromEndpoint(ctx, mux, fmt.Sprintf("%v:%v", "127.0.0.1", grpcPort), opts); err != nil {
 		return
 	}
@@ -95,5 +121,7 @@ func runREST(stop chan<- error) {
 func init() {
 	rootCmd.AddCommand(serverCmd)
 	serverCmd.Flags().StringVar(&host, "host", "0.0.0.0", "Host to listen on")
+	serverCmd.Flags().StringVar(&tlsCert, "tls-cert", "", "TLS Cert File")
+	serverCmd.Flags().StringVar(&tlsKey, "tls-key", "", "TLS Key File")
 
 }
